@@ -87,21 +87,22 @@ class IEEErepr:
     def __is_valid_prec(self, prec, e_num, m_num):
         prec = str(prec)
         prec.upper()
-        if prec == "HALF":
-            return IEEErepr.HALF
-        elif prec == "FLOAT":
-            return IEEErepr.FLOAT
-        elif prec == "DOUBLE":
-            return IEEErepr.DOUBLE
-        elif prec == "QUADRUPLE":
-            return IEEErepr.QUADRUPLE
-        elif prec == "OCTUPLE":
-            return IEEErepr.OCTUPLE
-        elif prec == "CUSTOM" and str(e_num).isdigit() and str(m_num).isdigit():
-            return IEEErepr.CUSTOM
-        else:
-            raise IEEErepr.UndefinedArgumentException
-        
+        match prec:
+            case "HALF":
+                return IEEErepr.HALF
+            case "FLOAT":
+                return IEEErepr.FLOAT
+            case "DOUBLE":
+                return IEEErepr.DOUBLE
+            case "QUADRUPLE":
+                return IEEErepr.QUADRUPLE
+            case "OCTUPLE":
+                return IEEErepr.OCTUPLE
+            case "CUSTOM" if str(e_num).isdigit() and str(m_num).isdigit():
+                return IEEErepr.CUSTOM
+            case _:
+                raise IEEErepr.UndefinedArgumentException
+
     def __bin_2_dec(self):
         def __bin_2_dec_itr():
             nonlocal tempstr
