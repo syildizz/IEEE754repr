@@ -1,7 +1,7 @@
 
 class IEEErepr:
 
-    #__length_list = [16, 32, 64, 128, 256]
+   #__length_list = [16, 32, 64, 128, 256]
     __exponent_list = [5, 8, 11, 15, 19]
     __mantissa_list = [10, 23, 52, 112, 236]
     __bias_list = [15, 127, 1023, 16_383, 262_143]
@@ -15,34 +15,11 @@ class IEEErepr:
     POSITIVE = '0'
     NEGATIVE = '1'
 
-    class UndefinedArgumentException(Exception):
-        pass
-
-    class NotAValidNumberException(Exception):
-        pass
-
     def __init__ (self, number, prec: str, exp_num = None, mantissa_num = None):
 
-        try:
-            self.__prec = self.__is_valid_prec(prec, exp_num, mantissa_num)
-        
-        except IEEErepr.UndefinedArgumentException:
-            print("UndefinedArgumentException: Not a valid precision argument")
-            print("Valid precision arguments:")
-            print("HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom")
-            print("Note: CUSTOM must include exponent and mantissa number value in that order")
-            exit()
-        
-        #self.__length_val = IEEErepr.__length_list[self.__prec]
-        try:
-            self.__number = self.__is_valid_num(number)
-
-        except IEEErepr.NotAValidNumberException:
-            print("NotAValidNumberException: The inputted value was not a valid number")
-            print("Valid numbers include:")
-            print("\"XX\", \"XX.XX\", XX, XX.XX")
-            exit()
-
+        self.__prec = self.__is_valid_prec(prec, exp_num, mantissa_num)
+        self.__number = self.__is_valid_num(number)
+       #self.__length_val = IEEErepr.__length_list[self.__prec]
         self.__exponent_val = IEEErepr.__exponent_list[self.__prec] if self.__prec != IEEErepr.CUSTOM else int(exp_num)  # type: ignore
         self.__mantissa_val = IEEErepr.__mantissa_list[self.__prec] if self.__prec != IEEErepr.CUSTOM else int(mantissa_num)  # type: ignore
         self.__bias_val = IEEErepr.__bias_list[self.__prec] if self.__prec != IEEErepr.CUSTOM else (2 ** (self.__exponent_val - 1)) - 1
@@ -81,7 +58,9 @@ class IEEErepr:
         if '.' not in number:
             number += ".0"
         if not number.replace('.', '').replace('-', '').isdigit() or number.count('.') != 1:
-                raise IEEErepr.NotAValidNumberException
+            raise ValueError("The inputted value was not a valid number\n"
+                             "Valid numbers include:\n"
+                             "\"XX\", \"XX.XX\", XX, XX.XX")
         return number
 
     def __is_valid_prec(self, prec, e_num, m_num):
@@ -101,7 +80,10 @@ class IEEErepr:
             case "CUSTOM" if str(e_num).isdigit() and str(m_num).isdigit():
                 return IEEErepr.CUSTOM
             case _:
-                raise IEEErepr.UndefinedArgumentException
+                raise ValueError("Not a valid precision argument\n"
+                                 "Valid precision arguments:\n"
+                                 "HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n"
+                                 "Note: CUSTOM must include exponent and mantissa number value in that order")
 
     def __bin_2_dec(self):
         def __bin_2_dec_itr():
