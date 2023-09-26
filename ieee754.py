@@ -1,5 +1,5 @@
 
-class IEEErepr:
+class IEEE754repr:
 
    #__length_list = [16, 32, 64, 128, 256]
     __exponent_list = [5, 8, 11, 15, 19]
@@ -19,11 +19,11 @@ class IEEErepr:
 
         self.__prec = self.__is_valid_prec(prec, exp_num, mantissa_num)
         self.__number = self.__is_valid_num(number)
-       #self.__length_val = IEEErepr.__length_list[self.__prec]
-        self.__exponent_val = IEEErepr.__exponent_list[self.__prec] if self.__prec != IEEErepr.CUSTOM else int(exp_num)  # type: ignore
-        self.__mantissa_val = IEEErepr.__mantissa_list[self.__prec] if self.__prec != IEEErepr.CUSTOM else int(mantissa_num)  # type: ignore
-        self.__bias_val = IEEErepr.__bias_list[self.__prec] if self.__prec != IEEErepr.CUSTOM else (2 ** (self.__exponent_val - 1)) - 1
-        self.__sign = IEEErepr.NEGATIVE if self.__number[0] == '-' else IEEErepr.POSITIVE
+       #self.__length_val = IEEE754repr.__length_list[self.__prec]
+        self.__exponent_val = IEEE754repr.__exponent_list[self.__prec] if self.__prec != IEEE754repr.CUSTOM else int(exp_num)  # type: ignore
+        self.__mantissa_val = IEEE754repr.__mantissa_list[self.__prec] if self.__prec != IEEE754repr.CUSTOM else int(mantissa_num)  # type: ignore
+        self.__bias_val = IEEE754repr.__bias_list[self.__prec] if self.__prec != IEEE754repr.CUSTOM else (2 ** (self.__exponent_val - 1)) - 1
+        self.__sign = IEEE754repr.NEGATIVE if self.__number[0] == '-' else IEEE754repr.POSITIVE
         self.__split_num = self.__num_splitter()
         self.__bin_num = self.__bin_2_int() + self.__bin_2_dec()
         if self.__bin_num.count('1') != 0:
@@ -68,17 +68,17 @@ class IEEErepr:
         prec.upper()
         match prec:
             case "HALF":
-                return IEEErepr.HALF
+                return IEEE754repr.HALF
             case "FLOAT":
-                return IEEErepr.FLOAT
+                return IEEE754repr.FLOAT
             case "DOUBLE":
-                return IEEErepr.DOUBLE
+                return IEEE754repr.DOUBLE
             case "QUADRUPLE":
-                return IEEErepr.QUADRUPLE
+                return IEEE754repr.QUADRUPLE
             case "OCTUPLE":
-                return IEEErepr.OCTUPLE
+                return IEEE754repr.OCTUPLE
             case "CUSTOM" if str(e_num).isdigit() and str(m_num).isdigit():
-                return IEEErepr.CUSTOM
+                return IEEE754repr.CUSTOM
             case _:
                 raise ValueError("Not a valid precision argument\n"
                                  "Valid precision arguments:\n"
@@ -102,7 +102,7 @@ class IEEErepr:
         if temp != 0:
             temp2 = 10**(len(self.__split_num[1]))
         else:
-            return '0' * (self.__mantissa_val) #replaced + 1 with * 2 
+            return '0' * (self.__mantissa_val) 
         i = 0
         while (tempstr.count('1') == 0):
             __bin_2_dec_itr()
@@ -122,6 +122,6 @@ class IEEErepr:
         return float_amount_bin
     
     def __num_splitter(self):
-        self.__abs_num = self.__number if self.__sign is IEEErepr.POSITIVE else self.__number[1:]
+        self.__abs_num = self.__number if self.__sign is IEEE754repr.POSITIVE else self.__number[1:]
         return self.__abs_num.split('.')
     
