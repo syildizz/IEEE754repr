@@ -15,7 +15,7 @@ class IEEE754repr:
     POSITIVE = '0'
     NEGATIVE = '1'
 
-    def __init__(self, number, prec: str, exp_num = None, mantissa_num = None):
+    def __init__(self, number: int | str, prec: str | int, exp_num = None, mantissa_num = None):
 
         _exponent_val, _mantissa_val, _bias_val = self.__parse_params(prec, exp_num, mantissa_num)
         _number = self.__is_valid_num(number)
@@ -51,38 +51,42 @@ class IEEE754repr:
 
     @staticmethod
     def __is_valid_num(number):
-        number = str(number).replace(',', '').replace('_', '').replace(' ', '')
-        if '.' not in number:
-            number += ".0"
-        if not number.replace('.', '').replace('-', '').isdigit() or number.count('.') != 1:
-            raise ValueError("The inputted value was not a valid number\n"
-                             "Valid numbers include:\n"
-                             "\"XX\", \"XX.XX\", XX, XX.XX")
-        return number
+        _number = str(number).replace(',', '').replace('_', '').replace(' ', '')
+        if '.' not in _number:
+            _number += ".0"
+        if not _number.replace('.', '').replace('-', '').isdigit() or _number.count('.') != 1:
+            raise ValueError('The inputted value "' + number + '" is not a valid number\n'
+                             'Valid numbers include:\n'
+                             ' "XX",  "XX.XX", \n'
+                             '  XX ,   XX.XX , \n'
+                             '"-XX", "-XX.XX", \n'
+                             ' -XX ,  -XX.XX')
+        return _number
 
     @classmethod
     def __parse_params(cls, prec, exp_num, mantissa_num):
         _prec = str(prec)
         _prec.upper()
         match _prec:
-            case "HALF":
+            case c if c in ["HALF", str(cls.HALF)]:
                 _prec = cls.HALF
-            case "FLOAT":
+            case c if c in ["FLOAT", str(cls.FLOAT)]:
                 _prec = cls.FLOAT
-            case "DOUBLE":
+            case c if c in ["DOUBLE", str(cls.DOUBLE)]:
                 _prec = cls.DOUBLE
-            case "QUADRUPLE":
+            case c if c in ["QUADRUPLE", str(cls.QUADRUPLE)]:
                 _prec = cls.QUADRUPLE
-            case "OCTUPLE":
+            case c if c in ["OCTUPLE", str(cls.OCTUPLE)]:
                 _prec = cls.OCTUPLE
-            case "CUSTOM" if str(exp_num).isdigit() and str(mantissa_num).isdigit():
+            case c if c in ["CUSTOM", str(cls.CUSTOM)] and str(exp_num).isdigit() and str(mantissa_num).isdigit():
                 _prec = cls.CUSTOM
             case _:
-                raise ValueError("Not a valid precision argument\n"
-                                 "Valid precision arguments:\n"
-                                 "HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n"
-                                 "Note: CUSTOM must include exponent and mantissa number value in that order")
-       
+                raise ValueError('Not a valid precision argument "' + _prec + '"\n'
+                                 'Valid precision arguments:\n'
+                                 'HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n'
+                                 'Note: CUSTOM must include exponent and mantissa number value in that order\n'
+                                 '      Exponent and mantissa argument must only consist of numeric digits')
+
        #_length_val = self.__length_list[_prec]
         _exponent_val = cls.__exponent_list[_prec] if _prec != cls.CUSTOM else int(exp_num)
         _mantissa_val = cls.__mantissa_list[_prec] if _prec != cls.CUSTOM else int(mantissa_num)
