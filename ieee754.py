@@ -17,12 +17,8 @@ class IEEE754repr:
 
     def __init__(self, number, prec: str, exp_num = None, mantissa_num = None):
 
-        _prec = self.__is_valid_prec(prec, exp_num, mantissa_num)
+        _exponent_val, _mantissa_val, _bias_val = self.__parse_params(prec, exp_num, mantissa_num)
         _number = self.__is_valid_num(number)
-       #_length_val = self.__length_list[_prec]
-        _exponent_val = self.__exponent_list[_prec] if _prec != self.CUSTOM else int(exp_num)  # type: ignore
-        _mantissa_val = self.__mantissa_list[_prec] if _prec != self.CUSTOM else int(mantissa_num)  # type: ignore
-        _bias_val = self.__bias_list[_prec] if _prec != self.CUSTOM else (2 ** (_exponent_val - 1)) - 1
         self.__sign = self.NEGATIVE if _number[0] == '-' else self.POSITIVE
         _split_num = self.__num_splitter(self.__sign, _number)
         _bin_num = self.__bin_2_int(_split_num) + self.__bin_2_dec(_split_num, _mantissa_val)
@@ -65,27 +61,33 @@ class IEEE754repr:
         return number
 
     @classmethod
-    def __is_valid_prec(cls, prec, exp_num, mantissa_num):
-        prec = str(prec)
-        prec.upper()
-        match prec:
+    def __parse_params(cls, prec, exp_num, mantissa_num):
+        _prec = str(prec)
+        _prec.upper()
+        match _prec:
             case "HALF":
-                return cls.HALF
+                _prec = cls.HALF
             case "FLOAT":
-                return cls.FLOAT
+                _prec = cls.FLOAT
             case "DOUBLE":
-                return cls.DOUBLE
+                _prec = cls.DOUBLE
             case "QUADRUPLE":
-                return cls.QUADRUPLE
+                _prec = cls.QUADRUPLE
             case "OCTUPLE":
-                return cls.OCTUPLE
+                _prec = cls.OCTUPLE
             case "CUSTOM" if str(exp_num).isdigit() and str(mantissa_num).isdigit():
-                return cls.CUSTOM
+                _prec = cls.CUSTOM
             case _:
                 raise ValueError("Not a valid precision argument\n"
                                  "Valid precision arguments:\n"
                                  "HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n"
                                  "Note: CUSTOM must include exponent and mantissa number value in that order")
+       
+       #_length_val = self.__length_list[_prec]
+        _exponent_val = cls.__exponent_list[_prec] if _prec != cls.CUSTOM else int(exp_num)
+        _mantissa_val = cls.__mantissa_list[_prec] if _prec != cls.CUSTOM else int(mantissa_num)
+        _bias_val = cls.__bias_list[_prec] if _prec != cls.CUSTOM else (2 ** (_exponent_val - 1)) - 1
+        return _exponent_val, _mantissa_val, _bias_val
 
     @staticmethod
     def __bin_2_dec(_split_num, _mantissa_val):
