@@ -15,23 +15,23 @@ class IEEE754repr:
     POSITIVE = '0'
     NEGATIVE = '1'
 
-    def __init__ (self, number, prec: str, exp_num = None, mantissa_num = None):
+    def __init__(self, number, prec: str, exp_num = None, mantissa_num = None):
 
-        self.__prec = self.__is_valid_prec(prec, exp_num, mantissa_num)
-        self.__number = self.__is_valid_num(number)
-       #self.__length_val = IEEE754repr.__length_list[self.__prec]
-        self.__exponent_val = IEEE754repr.__exponent_list[self.__prec] if self.__prec != IEEE754repr.CUSTOM else int(exp_num)  # type: ignore
-        self.__mantissa_val = IEEE754repr.__mantissa_list[self.__prec] if self.__prec != IEEE754repr.CUSTOM else int(mantissa_num)  # type: ignore
-        self.__bias_val = IEEE754repr.__bias_list[self.__prec] if self.__prec != IEEE754repr.CUSTOM else (2 ** (self.__exponent_val - 1)) - 1
-        self.__sign = IEEE754repr.NEGATIVE if self.__number[0] == '-' else IEEE754repr.POSITIVE
-        self.__split_num = self.__num_splitter()
-        self.__bin_num = self.__bin_2_int() + self.__bin_2_dec()
-        if self.__bin_num.count('1') != 0:
-            self.__mantissa = self.__bin_num[self.__bin_num.index('1') + 1:self.__bin_num.index('1') + self.__mantissa_val + 1]
-            self.__exponent = self.__exponent_2_bin()
+        _prec = self.__is_valid_prec(prec, exp_num, mantissa_num)
+        _number = self.__is_valid_num(number)
+       #_length_val = self.__length_list[_prec]
+        _exponent_val = self.__exponent_list[_prec] if _prec != self.CUSTOM else int(exp_num)  # type: ignore
+        _mantissa_val = self.__mantissa_list[_prec] if _prec != self.CUSTOM else int(mantissa_num)  # type: ignore
+        _bias_val = self.__bias_list[_prec] if _prec != self.CUSTOM else (2 ** (_exponent_val - 1)) - 1
+        self.__sign = self.NEGATIVE if _number[0] == '-' else self.POSITIVE
+        _split_num = self.__num_splitter(self.__sign, _number)
+        _bin_num = self.__bin_2_int(_split_num) + self.__bin_2_dec(_split_num, _mantissa_val)
+        if _bin_num.count('1') != 0:
+            self.__mantissa = _bin_num[_bin_num.index('1') + 1 : _bin_num.index('1') + _mantissa_val + 1]
+            self.__exponent = self.__exponent_2_bin(_split_num, _bin_num, _bias_val, _exponent_val)
         else:
-            self.__mantissa = '0' * (self.__mantissa_val)
-            self.__exponent = '0' * (self.__exponent_val)
+            self.__mantissa = '0' * (_mantissa_val)
+            self.__exponent = '0' * (_exponent_val)
         self.__float = self.__sign + self.__exponent + self.__mantissa
 
     def __str__(self):
@@ -53,7 +53,8 @@ class IEEE754repr:
     def get_exponent(self):
         return self.__exponent
 
-    def __is_valid_num(self, number):
+    @staticmethod
+    def __is_valid_num(number):
         number = str(number).replace(',', '').replace('_', '').replace(' ', '')
         if '.' not in number:
             number += ".0"
@@ -63,29 +64,31 @@ class IEEE754repr:
                              "\"XX\", \"XX.XX\", XX, XX.XX")
         return number
 
-    def __is_valid_prec(self, prec, e_num, m_num):
+    @classmethod
+    def __is_valid_prec(cls, prec, exp_num, mantissa_num):
         prec = str(prec)
         prec.upper()
         match prec:
             case "HALF":
-                return IEEE754repr.HALF
+                return cls.HALF
             case "FLOAT":
-                return IEEE754repr.FLOAT
+                return cls.FLOAT
             case "DOUBLE":
-                return IEEE754repr.DOUBLE
+                return cls.DOUBLE
             case "QUADRUPLE":
-                return IEEE754repr.QUADRUPLE
+                return cls.QUADRUPLE
             case "OCTUPLE":
-                return IEEE754repr.OCTUPLE
-            case "CUSTOM" if str(e_num).isdigit() and str(m_num).isdigit():
-                return IEEE754repr.CUSTOM
+                return cls.OCTUPLE
+            case "CUSTOM" if str(exp_num).isdigit() and str(mantissa_num).isdigit():
+                return cls.CUSTOM
             case _:
                 raise ValueError("Not a valid precision argument\n"
                                  "Valid precision arguments:\n"
                                  "HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n"
                                  "Note: CUSTOM must include exponent and mantissa number value in that order")
 
-    def __bin_2_dec(self):
+    @staticmethod
+    def __bin_2_dec(_split_num, _mantissa_val):
         def __bin_2_dec_itr():
             nonlocal tempstr
             nonlocal temp
@@ -98,30 +101,32 @@ class IEEE754repr:
                 tempstr += '0'
             return tempstr
         tempstr = ""
-        temp = int(self.__split_num[1])
+        temp = int(_split_num[1])
         if temp != 0:
-            temp2 = 10**(len(self.__split_num[1]))
+            temp2 = 10**(len(_split_num[1]))
         else:
-            return '0' * (self.__mantissa_val) 
+            return '0' * (_mantissa_val)
         i = 0
         while (tempstr.count('1') == 0):
             __bin_2_dec_itr()
             i += 1
-        for _ in range(0,self.__mantissa_val + i):
+        for _ in range(0,_mantissa_val + i):
             __bin_2_dec_itr()
         return tempstr
-    
-    def __bin_2_int(self):
-        return bin(int(self.__split_num[0]))[2:]
 
-    def __exponent_2_bin(self):
-        float_amount = len(self.__bin_2_int()) - (self.__bin_num.index('1') + 1) 
-        float_amount_bin = bin(self.__bias_val + float_amount)[2:self.__exponent_val + 2]
-        while len(float_amount_bin) < self.__exponent_val:
+    @staticmethod
+    def __bin_2_int(_split_num):
+        return bin(int(_split_num[0]))[2:]
+
+    @classmethod
+    def __exponent_2_bin(cls, _split_num, _bin_num, _bias_val, _exponent_val):
+        float_amount = len(cls.__bin_2_int(_split_num)) - (_bin_num.index('1') + 1)
+        float_amount_bin = bin(_bias_val + float_amount)[2 : _exponent_val + 2]
+        while len(float_amount_bin) < _exponent_val:
             float_amount_bin = '0' + float_amount_bin
         return float_amount_bin
-    
-    def __num_splitter(self):
-        self.__abs_num = self.__number if self.__sign is IEEE754repr.POSITIVE else self.__number[1:]
-        return self.__abs_num.split('.')
-    
+
+    @classmethod
+    def __num_splitter(cls, _sign, _number):
+        abs_num = _number if _sign is cls.POSITIVE else _number[1:]
+        return abs_num.split('.')
