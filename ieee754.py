@@ -15,56 +15,58 @@ class IEEE754repr:
     POSITIVE = '0'
     NEGATIVE = '1'
 
-    def __init__(self, number: int | str, prec: str | int, exp_num = None, mantissa_num = None):
+    def __init__(self, number: int | float | str, prec: str | int, exp_num: None | int = None, mantissa_num: None | int = None):
 
-        _exponent_val, _mantissa_val, _bias_val = self.__parse_params(prec, exp_num, mantissa_num)
-        _number = self.__is_valid_num(number)
-        self.__sign = self.NEGATIVE if _number[0] == '-' else self.POSITIVE
-        _split_num = self.__num_splitter(self.__sign, _number)
-        _bin_num = self.__bin_2_int(_split_num) + self.__bin_2_dec(_split_num, _mantissa_val)
-        if _bin_num.count('1') != 0:
-            self.__mantissa = _bin_num[_bin_num.index('1') + 1 : _bin_num.index('1') + _mantissa_val + 1]
-            self.__exponent = self.__exponent_2_bin(_split_num, _bin_num, _bias_val, _exponent_val)
+        exponent_val, mantissa_val, bias_val = self.__parse_params(prec, exp_num, mantissa_num)
+        self.__sign, _number = self.__parse_number(number)
+        split_num = self.__num_splitter(self.__sign, _number)
+        integer_split_num, decimal_split_num = self.__bin_2_int(split_num[0]), self.__bin_2_dec(split_num[1], mantissa_val)
+        bin_num = integer_split_num + decimal_split_num
+        if bin_num.count('1') != 0:
+            self.__mantissa = bin_num[bin_num.index('1') + 1 : bin_num.index('1') + mantissa_val + 1]
+            self.__exponent = self.__exponent_2_bin(integer_split_num, bin_num, bias_val, exponent_val)
         else:
-            self.__mantissa = '0' * (_mantissa_val)
-            self.__exponent = '0' * (_exponent_val)
+            self.__mantissa = '0' * (mantissa_val)
+            self.__exponent = '0' * (exponent_val)
         self.__float = self.__sign + self.__exponent + self.__mantissa
 
     def __str__(self):
         return self.__float
 
-    def get_binary(self):
+    def get_binary(self) -> str:
         return self.__float
 
     # Following piece of code taken from: https://stackoverflow.com/a/2072384
-    def get_hex(self):
+    def get_hex(self) -> str:
         return '%0*X' % ((len(self.__float) + 3) // 4, int(self.__float, 2))
 
-    def get_mantissa(self):
+    def get_mantissa(self) -> str:
         return self.__mantissa
 
-    def get_sign(self):
+    def get_sign(self) -> str:
         return self.__sign
 
-    def get_exponent(self):
+    def get_exponent(self) -> str:
         return self.__exponent
 
-    @staticmethod
-    def __is_valid_num(number):
+    @classmethod
+    def __parse_number(cls, number: int | float | str) -> tuple[str, str]:
         _number = str(number).replace(',', '').replace('_', '').replace(' ', '')
         if '.' not in _number:
             _number += ".0"
         if not _number.replace('.', '').replace('-', '').isdigit() or _number.count('.') != 1:
-            raise ValueError('The inputted value "' + number + '" is not a valid number\n'
+            raise ValueError('The inputted value "' + str(number) + '" is not a valid number\n'
                              'Valid numbers include:\n'
                              ' "XX",  "XX.XX", \n'
                              '  XX ,   XX.XX , \n'
                              '"-XX", "-XX.XX", \n'
                              ' -XX ,  -XX.XX')
-        return _number
+
+        sign = cls.NEGATIVE if _number[0] == '-' else cls.POSITIVE
+        return sign, _number
 
     @classmethod
-    def __parse_params(cls, prec, exp_num, mantissa_num):
+    def __parse_params(cls, prec: str | int, exp_num: None | int, mantissa_num: None | int) -> tuple[int, int, int]:
         _prec = str(prec)
         _prec.upper()
         match _prec:
@@ -88,13 +90,13 @@ class IEEE754repr:
                                  '      Exponent and mantissa argument must only consist of numeric digits')
 
        #_length_val = self.__length_list[_prec]
-        _exponent_val = cls.__exponent_list[_prec] if _prec != cls.CUSTOM else int(exp_num)
-        _mantissa_val = cls.__mantissa_list[_prec] if _prec != cls.CUSTOM else int(mantissa_num)
-        _bias_val = cls.__bias_list[_prec] if _prec != cls.CUSTOM else (2 ** (_exponent_val - 1)) - 1
-        return _exponent_val, _mantissa_val, _bias_val
+        exponent_val = cls.__exponent_list[_prec] if _prec != cls.CUSTOM else int(exp_num)  # type: ignore
+        mantissa_val = cls.__mantissa_list[_prec] if _prec != cls.CUSTOM else int(mantissa_num) # type: ignore
+        bias_val = cls.__bias_list[_prec] if _prec != cls.CUSTOM else (2 ** (exponent_val - 1)) - 1
+        return exponent_val, mantissa_val, bias_val
 
     @staticmethod
-    def __bin_2_dec(_split_num, _mantissa_val):
+    def __bin_2_dec(decimal_split_num: str, mantissa_val: int) -> str:
         def __bin_2_dec_itr():
             nonlocal tempstr
             nonlocal temp
@@ -107,32 +109,32 @@ class IEEE754repr:
                 tempstr += '0'
             return tempstr
         tempstr = ""
-        temp = int(_split_num[1])
+        temp = int(decimal_split_num)
         if temp != 0:
-            temp2 = 10**(len(_split_num[1]))
+            temp2 = 10**(len(decimal_split_num))
         else:
-            return '0' * (_mantissa_val)
+            return '0' * (mantissa_val)
         i = 0
         while (tempstr.count('1') == 0):
             __bin_2_dec_itr()
             i += 1
-        for _ in range(0,_mantissa_val + i):
+        for _ in range(0, mantissa_val + i):
             __bin_2_dec_itr()
         return tempstr
 
     @staticmethod
-    def __bin_2_int(_split_num):
-        return bin(int(_split_num[0]))[2:]
+    def __bin_2_int(integer_split_num: str) -> str:
+        return f'{int(integer_split_num):b}'
 
     @classmethod
-    def __exponent_2_bin(cls, _split_num, _bin_num, _bias_val, _exponent_val):
-        float_amount = len(cls.__bin_2_int(_split_num)) - (_bin_num.index('1') + 1)
-        float_amount_bin = bin(_bias_val + float_amount)[2 : _exponent_val + 2]
-        while len(float_amount_bin) < _exponent_val:
+    def __exponent_2_bin(cls, integer_split_num: str, bin_num: str, bias_val: int, exponent_val: int) -> str:
+        float_amount = len(integer_split_num) - (bin_num.index('1') + 1)
+        float_amount_bin = bin(bias_val + float_amount)[2 : exponent_val + 2]
+        while len(float_amount_bin) < exponent_val:
             float_amount_bin = '0' + float_amount_bin
         return float_amount_bin
 
     @classmethod
-    def __num_splitter(cls, _sign, _number):
-        abs_num = _number if _sign is cls.POSITIVE else _number[1:]
+    def __num_splitter(cls, sign: str, number: str) -> list[str]:
+        abs_num = number if sign is cls.POSITIVE else number[1:]
         return abs_num.split('.')
