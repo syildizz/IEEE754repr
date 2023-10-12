@@ -70,8 +70,7 @@ class IEEE754repr:
 
     @classmethod
     def __parse_params(cls, prec: str | int, exp_num: None | int, mantissa_num: None | int) -> tuple[int, int, int]:
-        _prec = str(prec)
-        _prec.upper()
+        _prec = str(prec).upper()
         match _prec:
             case c if c in ["HALF", str(cls.HALF)]:
                 _prec = cls.HALF
