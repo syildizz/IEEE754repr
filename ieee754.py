@@ -26,7 +26,7 @@ class IEEE754repr:
         bin_num = integer_split_num + decimal_split_num
         if bin_num.count('1') != 0:
             adjusted_bin_num = self.__adjust_binnum(bin_num, mantissa_val, rest_zeros)
-            self.__mantissa = adjusted_bin_num[adjusted_bin_num.index('1') + 1 : adjusted_bin_num.index('1') + mantissa_val + 1]
+            self.__mantissa = self.__mantissa_2_bin(adjusted_bin_num, mantissa_val)
             self.__exponent = self.__exponent_2_bin(integer_split_num, adjusted_bin_num, bias_val, exponent_val)
         else:
             self.__mantissa = '0' * (mantissa_val)
@@ -134,11 +134,19 @@ class IEEE754repr:
 
     @classmethod
     def __exponent_2_bin(cls, integer_split_num: str, bin_num: str, bias_val: int, exponent_val: int) -> str:
+        if exponent_val == 0:
+            return ""
         float_amount = len(integer_split_num) - (bin_num.index('1') + 1)
         float_amount_bin = bin(bias_val + float_amount)[2 : exponent_val + 2]
         while len(float_amount_bin) < exponent_val:
             float_amount_bin = '0' + float_amount_bin
         return float_amount_bin
+
+    @staticmethod
+    def __mantissa_2_bin(bin_num: str, mantissa_val: int) -> str:
+        if mantissa_val == 0:
+            return ""
+        return bin_num[bin_num.index('1') + 1 : bin_num.index('1') + mantissa_val + 1]
 
     @staticmethod
     def __round_up(bin_num: str) -> str:
