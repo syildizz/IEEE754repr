@@ -157,14 +157,14 @@ class IEEE754repr:
 
     @classmethod
     def __adjust_binnum(cls, bin_num: str, mantissa_val: int, rest_zeros: bool) -> str:
-            mantissa_cutoff = bin_num[: bin_num.index('1') + mantissa_val + 1 + cls.__MANTISSA_MARGIN][-2:]
+        mantissa_cutoff = bin_num[: bin_num.index('1') + mantissa_val + 1 + cls.__MANTISSA_MARGIN][-2:]
 
-            M, G = mantissa_cutoff            
-            if G == "1" and (not rest_zeros or (not rest_zeros and M == "1")):
-                _bin_num = cls.__round_up(bin_num[: bin_num.index('1') + mantissa_val + 1])
-            else:
-                _bin_num = bin_num[: bin_num.index('1') + mantissa_val + 1]
-            return _bin_num
+        M, G = mantissa_cutoff            
+        if G == "1" and (not rest_zeros or (not rest_zeros and M == "1")):
+            _bin_num = cls.__round_up(bin_num[: bin_num.index('1') + mantissa_val + 1])
+        else:
+            _bin_num = bin_num[: bin_num.index('1') + mantissa_val + 1]
+        return _bin_num
 
     @classmethod
     def __num_splitter(cls, sign: str, number: str) -> list[str]:
