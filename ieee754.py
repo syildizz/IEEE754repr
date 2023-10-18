@@ -71,25 +71,24 @@ class IEEE754repr:
     @classmethod
     def __parse_params(cls, prec: str | int, exp_num: None | int, mantissa_num: None | int) -> tuple[int, int, int]:
         _prec = str(prec).upper()
-        match _prec:
-            case c if c in ["HALF", str(cls.HALF)]:
-                _prec = cls.HALF
-            case c if c in ["FLOAT", str(cls.FLOAT)]:
-                _prec = cls.FLOAT
-            case c if c in ["DOUBLE", str(cls.DOUBLE)]:
-                _prec = cls.DOUBLE
-            case c if c in ["QUADRUPLE", str(cls.QUADRUPLE)]:
-                _prec = cls.QUADRUPLE
-            case c if c in ["OCTUPLE", str(cls.OCTUPLE)]:
-                _prec = cls.OCTUPLE
-            case c if c in ["CUSTOM", str(cls.CUSTOM)] and str(exp_num).isdigit() and str(mantissa_num).isdigit():
-                _prec = cls.CUSTOM
-            case _:
-                raise ValueError('Not a valid precision argument "' + _prec + '"\n'
-                                 'Valid precision arguments:\n'
-                                 'HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n'
-                                 'Note: CUSTOM must include exponent and mantissa number value in that order\n'
-                                 '      Exponent and mantissa argument must only consist of numeric digits')
+        if _prec in ["HALF", str(cls.HALF)]:
+            _prec = cls.HALF
+        elif _prec in ["FLOAT", str(cls.FLOAT)]:
+            _prec = cls.FLOAT
+        elif _prec in ["DOUBLE", str(cls.DOUBLE)]:
+            _prec = cls.DOUBLE
+        elif _prec in ["QUADRUPLE", str(cls.QUADRUPLE)]:
+            _prec = cls.QUADRUPLE
+        elif _prec in ["OCTUPLE", str(cls.OCTUPLE)]:
+            _prec = cls.OCTUPLE
+        elif _prec in ["CUSTOM", str(cls.CUSTOM)] and str(exp_num).isdigit() and str(mantissa_num).isdigit():
+            _prec = cls.CUSTOM
+        else:
+            raise ValueError('Not a valid precision argument "' + _prec + '"\n'
+                             'Valid precision arguments:\n'
+                             'HALF: 16 bit, FLOAT: 32 bit, DOUBLE: 64 bit, QUADRUPLE: 128 bit, OCTUPLE: 256 bit, CUSTOM: custom\n'
+                             'Note: CUSTOM must include exponent and mantissa number value in that order\n'
+                             '      Exponent and mantissa argument must only consist of numeric digits')
 
        #_length_val = self.__length_list[_prec]
         exponent_val = cls.__exponent_list[_prec] if _prec != cls.CUSTOM else int(exp_num)  # type: ignore
