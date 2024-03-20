@@ -32,7 +32,7 @@ class IEEE754repr:
         self.__sign, _number = self.__parse_number(number)
 
         # Split the number from the dot into the integer and the decimal section and return as tuple.
-        split_num = self.__num_splitter(self.__sign, _number)
+        split_num = _number.split(".")
 
         # Turn both of the halves into their binary representations and return the result. Also return rest_zeros for rounding.
         integer_split_num, (decimal_split_num, rest_zeros) = self.__bin_2_int(split_num[0]), self.__bin_2_dec(split_num[1], mantissa_val)
@@ -90,7 +90,7 @@ class IEEE754repr:
         Parse the number into a standart format and return the parsed number and the sign bit.
 
         e.g. "-1_234.5678" -> "0" (cls.NEGATIVE), 
-                              "-1234.5678"
+                              "1234.5678"
 
         :param number: The number that is going to be parsed.
         :returns: Tuple (sign, number) containing:
@@ -347,23 +347,3 @@ class IEEE754repr:
         else:
             _bin_num = bin_num[: bin_num.index('1') + mantissa_val + 1]
         return _bin_num
-
-    @classmethod
-    def __num_splitter(cls, sign: str, number: str) -> list[str]:
-        """
-        Split the number from the dot into the integer and the decimal section.
-
-        e.g. -1234.5678 -> 1234, 
-                           5678
-
-        :param sign: The sign of the number.
-        :param number: The number which is going to be split.
-        :returns A Tuple (integer, decimal) containing:
-            - integer: The integer section of the number
-            - decimal: The decimal section of the number
-        """
-        # Take the absolute value of number to split
-        abs_num = number if sign is cls.POSITIVE else number[1:]
-        # Split from the middle
-        return abs_num.split('.')
-
