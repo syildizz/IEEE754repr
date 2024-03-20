@@ -220,7 +220,6 @@ class IEEE754repr:
         ## Generate binary digits until we hit a one.
         while (accumulator.count('1') == 0):
             __bin_2_dec_itr()
-        shift_amount = len(accumulator)
 
         ## Generate binary digits until we have generated at least enough numbers for the mantissa section
         for _ in range(mantissa_val + cls.__MANTISSA_MARGIN):
