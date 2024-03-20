@@ -343,7 +343,7 @@ class IEEE754repr:
         #         rest_zeros is true and M is 1
         #             if rest_zeros is true then the number ends with 0.5 and should be rounded if LSB is 1 (number is odd).
         M, G = mantissa_cutoff            
-        if G == "1" and (not rest_zeros or (not rest_zeros and M == "1")):
+        if G == "1" and (not rest_zeros or (rest_zeros and M == "1")):
             _bin_num = cls.__round_up(bin_num[: bin_num.index('1') + mantissa_val + 1])
         else:
             _bin_num = bin_num[: bin_num.index('1') + mantissa_val + 1]
