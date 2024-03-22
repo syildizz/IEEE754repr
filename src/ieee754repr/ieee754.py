@@ -164,8 +164,8 @@ class IEEE754repr:
 
         # Determine the number of bits used for each section of the binary representation based on precision and parameters and calculate the bias value.
        #length_val = self.__length_list[_prec]
-        exponent_val = cls.__exponent_list[_prec] if _prec != cls.CUSTOM else int(exp_num)  #  type: ignore
-        mantissa_val = cls.__mantissa_list[_prec] if _prec != cls.CUSTOM else int(mantissa_num) #  type: ignore
+        exponent_val = cls.__exponent_list[_prec] if not (_prec == cls.CUSTOM and isinstance(exp_num, int)) else int(exp_num)
+        mantissa_val = cls.__mantissa_list[_prec] if not (_prec == cls.CUSTOM and isinstance(mantissa_num, int)) else int(mantissa_num)
         bias_val = cls.__bias_list[_prec] if _prec != cls.CUSTOM else (2 ** (exponent_val - 1)) - 1
 
         # Return the numbers of bits which are going to be used for the exponent and mantissa sections and return the bias value.
